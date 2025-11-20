@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lovable Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="script.js" defer></script>
+    <!-- Import Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="lovable_logo.png" alt="Logo" class="logo">
+                <span class="brand-name">Lovable Clone</span>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active">
+                    <i data-lucide="message-square-plus"></i>
+                    <span>New Project</span>
+                </div>
+                <div class="menu-item">
+                    <i data-lucide="history"></i>
+                    <span>History</span>
+                </div>
+                <div class="menu-item">
+                    <i data-lucide="layout-template"></i>
+                    <span>Templates</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">U</div>
+                    <span>User</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main-content">
+            
+            <!-- Sidebar Toggle -->
+            <button id="sidebar-toggle" class="sidebar-toggle" title="Toggle Sidebar">
+                <i data-lucide="panel-left"></i>
+            </button>
+
+            <!-- Empty State (Initial View) -->
+            <div class="empty-state" id="empty-state">
+                <h1 class="hero-title">What do you want to build?</h1>
+                <div class="input-wrapper large">
+                    <textarea id="initial-input" placeholder="Describe your app..."></textarea>
+                    <button id="initial-send-btn" class="send-btn">
+                        <i data-lucide="arrow-up"></i>
+                    </button>
+                </div>
+                <div class="suggestions">
+                    <button class="pill" data-prompt="Create a landing page with a hero section">Landing Page</button>
+                    <button class="pill" data-prompt="Make a simple todo list app">Todo List</button>
+                    <button class="pill" data-prompt="Design a pricing card">Pricing Card</button>
+                </div>
+            </div>
+
+            <!-- Active Project View (Split View) -->
+            <div class="project-view hidden" id="project-view">
+                
+                <!-- Chat / Code Panel -->
+                <div class="panel chat-panel">
+                    <div class="chat-header">
+                        <h2>Project Chat</h2>
+                        <div class="chat-controls">
+                           <button id="history-btn" class="icon-btn history-toggle">
+                               <i data-lucide="history"></i>
+                           </button>
+                           <span class="status-indicator" id="status-indicator">Ready</span>
+                        </div>
+                    </div>
+                    <div class="messages-container" id="messages-container">
+                        <!-- Messages go here -->
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="input-wrapper small">
+                            <textarea id="chat-input" placeholder="Ask for changes..."></textarea>
+                            <button id="chat-send-btn" class="send-btn">
+                                <i data-lucide="arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="panel preview-panel">
+                    <div class="preview-header">
+                        <div class="preview-tabs">
+                            <button class="tab active" data-view="preview">Preview</button>
+                            <button class="tab" data-view="code">Code</button>
+                            <button class="tab" data-view="terminal">Terminal</button>
+                        </div>
+                        <div class="preview-actions">
+                            <button class="icon-btn"><i data-lucide="smartphone"></i></button>
+                            <button class="icon-btn"><i data-lucide="monitor"></i></button>
+                            <button class="icon-btn"><i data-lucide="external-link"></i></button>
+                        </div>
+                    </div>
+                    <div class="preview-content">
+                        <iframe id="preview-frame" srcdoc="<html><body style='margin:0; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#666;'>Waiting for input...</body></html>"></iframe>
+                        <div id="code-view" class="hidden">
+                            <aside class="file-explorer">
+                                <div class="explorer-header">
+                                    <span>Files</span>
+                                </div>
+                                <div id="file-list" class="file-list"></div>
+                            </aside>
+                            <div class="code-editor-container">
+                                <div id="code-editor-mount" class="code-editor-mount"></div>
+                            </div>
+                        </div>
+                        <div id="terminal-view" class="hidden terminal-view">
+                            <div class="terminal-output" id="terminal-output">
+                                <div class="terminal-line system">> System initializing...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </main>
+</div>
+</body>
+</html>
