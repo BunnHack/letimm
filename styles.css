@@ -371,6 +371,7 @@ body {
     border-radius: 0.75rem;
     font-size: 0.9rem;
     line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .user .msg-content {
@@ -664,4 +665,4 @@ iframe {
     .hero-title {
         font-size: 1.8rem;
     }
-}
+        }
