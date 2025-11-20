@@ -233,7 +233,22 @@ async function generateWithAI(prompt, onChunk) {
         })
     });
 
-    if (!response.ok) throw new Error('Failed to generate code');
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("OpenRouter API Error:", errorText);
+        let errorMessage = `API Error ${response.status}`;
+        try {
+            const errorJson = JSON.parse(errorText);
+            if (errorJson.error && errorJson.error.message) {
+                errorMessage = errorJson.error.message;
+            } else if (errorJson.message) {
+                errorMessage = errorJson.message;
+            }
+        } catch (e) {
+            errorMessage = `${errorMessage}: ${errorText.substring(0, 200)}`;
+        }
+        throw new Error(errorMessage);
+    }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
