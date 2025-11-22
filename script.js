@@ -180,17 +180,45 @@ async function handleInput(text) {
         });
         
         // Clean up markdown if present
-        let finalHtml = accumulatedCode.replace(/```html/g, '').replace(/```/g, '').trim();
+        let componentCode = accumulatedCode.replace(/```html/g, '').replace(/```/g, '').trim();
+        
+        // Wrap in full HTML structure with unpkg Tailwind (supports CORP)
+        const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated App</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: sans-serif; }
+    </style>
+</head>
+<body>
+    ${componentCode}
+    <script type="module" src="script.js"></script>
+    <script>
+        window.onload = () => {
+            if (window.lucide) lucide.createIcons();
+        };
+    </script>
+</body>
+</html>`;
         
         // Update State
-        state.files['index.html'].content = finalHtml;
+        state.files['index.html'].content = fullHtml;
+        if (state.activeFile === 'index.html') {
+             updateEditorContent(fullHtml);
+        }
 
-        // Update Preview with full wrapper (Immediate feedback)
-        updatePreview(finalHtml);
+        // Update Preview with full wrapper
+        updatePreview(fullHtml);
         
         // Sync with WebContainer
         if (webContainerInstance) {
-            await writeFile('index.html', finalHtml);
+            await writeFile('index.html', fullHtml);
         }
 
         // Update AI message
@@ -302,20 +330,28 @@ function updatePreview(html) {
         return;
     }
 
-    const fullHtml = `
+    let fullHtml = html;
+    // Check if it's a full document or just a fragment
+    if (!html.trim().startsWith('<!DOCTYPE html>')) {
+        fullHtml = `
         <!DOCTYPE html>
         <html>
         <head>
-            <script src="https://cdn.tailwindcss.com"></script>
+            <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <script src="https://unpkg.com/lucide@latest"></script>
             <style>
                 body { font-family: sans-serif; }
             </style>
         </head>
         <body class="bg-white min-h-screen">
             ${html}
+            <script>
+                if (window.lucide) lucide.createIcons();
+            </script>
         </body>
         </html>
-    `;
+        `;
+    }
 
     // Update Iframe
     frameDoc.open();
