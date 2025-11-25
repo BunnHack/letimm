@@ -190,7 +190,7 @@ async function handleInput(text) {
         }
 
         // Update AI message
-        contentEl.innerHTML = `I've built that for you. Check the preview!`;
+        contentEl.innerHTML = `<p>I've built that for you. Check the preview!</p><div class="code-block">${UI.escapeHtml(componentCode)}</div>`;
         
         // Play sound
         UI.playSuccessSound();
