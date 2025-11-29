@@ -15,7 +15,7 @@ export async function generateWithAI(prompt, onChunk) {
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are an expert frontend developer. Generate a modern, responsive HTML component using Tailwind CSS based on the user's request. Return ONLY the raw HTML code. Do not include markdown code blocks (```). Do not include <html>, <head>, or <body> tags. Just the component markup."
+                    "content": "You are an expert full-stack developer. Generate a complete, modern, responsive web application based on the user's request. You can create multiple files (HTML, CSS, JS, JSON). \n\nIMPORTANT: Wrap each file's content in these tags:\n<file name=\"filename.extension\">\n... content ...\n</file>\n\nAlways include an 'index.html' file as the entry point.\nEnsure the code is fully functional and self-contained. Do not include markdown code blocks."
                 },
                 {
                     "role": "user",

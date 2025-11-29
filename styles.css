@@ -397,13 +397,11 @@ body {
     margin-top: 0.5rem;
     border: 1px solid #1e293b;
     position: relative;
-    overflow: auto;
-    max-height: 300px;
-    white-space: pre-wrap;
+    overflow: hidden;
 }
 
 .code-block::before {
-    content: 'HTML';
+    content: 'Writing code...';
     position: absolute;
     top: 0;
     right: 0;

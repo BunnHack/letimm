@@ -14,12 +14,19 @@ export function initEditor() {
     // Clean up existing editor if any
     els.codeEditorMount.innerHTML = '';
     
+    if (!state.activeFile || !state.files[state.activeFile]) return;
+
     editor = new EditorView({
         doc: state.files[state.activeFile].content,
         extensions: [
             basicSetup,
             oneDark,
-            html()
+            html(),
+            EditorView.updateListener.of(update => {
+                if (update.docChanged) {
+                    state.files[state.activeFile].content = update.state.doc.toString();
+                }
+            })
         ],
         parent: els.codeEditorMount
     });
@@ -34,35 +41,41 @@ export function updateEditorContent(content) {
 }
 
 export function displayFile(filename) {
+    if (!filename || !state.files[filename]) {
+        if (editor) {
+            editor.destroy();
+            editor = null;
+        }
+        if (els.codeEditorMount) els.codeEditorMount.innerHTML = '';
+        return;
+    }
+
     if (state.files[filename]) {
         const content = state.files[filename].content;
 
         if (editor) {
-            updateEditorContent(content);
-
-            // Re-init for simplicity to get correct syntax highlighting
-            // We can't easily swap languages in basic usage without reconfiguration
+            // Destroy the old editor first to avoid triggering its update listener with new content
             editor.destroy();
-
-            let langExt = html();
-            if (filename.endsWith('.css')) langExt = css();
-            if (filename.endsWith('.js')) langExt = javascript();
-
-            editor = new EditorView({
-                doc: content,
-                extensions: [
-                    basicSetup,
-                    oneDark,
-                    langExt,
-                    EditorView.updateListener.of(update => {
-                        if (update.docChanged) {
-                            state.files[filename].content = update.state.doc.toString();
-                        }
-                    })
-                ],
-                parent: els.codeEditorMount
-            });
         }
+
+        let langExt = html();
+        if (filename.endsWith('.css')) langExt = css();
+        if (filename.endsWith('.js')) langExt = javascript();
+
+        editor = new EditorView({
+            doc: content,
+            extensions: [
+                basicSetup,
+                oneDark,
+                langExt,
+                EditorView.updateListener.of(update => {
+                    if (update.docChanged) {
+                        state.files[filename].content = update.state.doc.toString();
+                    }
+                })
+            ],
+            parent: els.codeEditorMount
+        });
     }
 }
 

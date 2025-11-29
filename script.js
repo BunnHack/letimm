@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     Editor.renderFileExplorer();
-    Editor.displayFile(state.activeFile);
+    if (state.activeFile) Editor.displayFile(state.activeFile);
 
     // History Button
     if(UI.els.historyBtn) {
@@ -135,62 +135,57 @@ async function handleInput(text) {
             
             // Update UI feedback
             contentEl.innerHTML = `Building... <span style="font-family:monospace; opacity:0.7">(${accumulatedCode.length} chars)</span>`;
-            
-            // Live update of code view if active
-            state.files['index.html'].content = accumulatedCode;
-            if (state.activeFile === 'index.html') {
-                 Editor.updateEditorContent(accumulatedCode);
-            }
         });
         
         if (!accumulatedCode.trim()) {
             throw new Error("No code was generated from the response.");
         }
         
-        // Clean up markdown if present
-        let componentCode = accumulatedCode.replace(/```html/g, '').replace(/```/g, '').trim();
+        // Parse the response for multiple files
+        const files = parseResponse(accumulatedCode);
         
-        // Wrap in full HTML structure with unpkg Tailwind (supports CORP)
-        const fullHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generated App</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body { font-family: sans-serif; background-color: #ffffff; }
-    </style>
-</head>
-<body class="bg-white">
-    ${componentCode}
-    <script type="module" src="script.js"></script>
-    <script>
-        window.onload = () => {
-            if (window.lucide) lucide.createIcons();
-        };
-    </script>
-</body>
-</html>`;
-        
-        // Update State
-        state.files['index.html'].content = fullHtml;
-        if (state.activeFile === 'index.html') {
-             Editor.updateEditorContent(fullHtml);
+        // Fallback: If no file tags detected, treat as single HTML file
+        if (Object.keys(files).length === 0) {
+            console.log("No file tags found, using fallback parser");
+            // Clean up markdown if present
+            let cleanCode = accumulatedCode.replace(/```html/g, '').replace(/```/g, '').trim();
+            
+            if (!cleanCode.includes('<!DOCTYPE html>')) {
+                cleanCode = wrapInTemplate(cleanCode);
+            }
+            files['index.html'] = cleanCode;
         }
 
-        // Update Preview with full wrapper
-        UI.updatePreview(fullHtml);
-        
-        // Sync with WebContainer
-        if (state.webContainerLoaded) {
-            await WC.writeFile('index.html', fullHtml);
+        // Update State and WebContainer
+        for (const [filename, content] of Object.entries(files)) {
+            state.files[filename] = { content };
+            if (state.webContainerLoaded) {
+                await WC.writeFile(filename, content);
+            }
+        }
+
+        // Refresh File Explorer
+        Editor.renderFileExplorer();
+
+        // Switch to index.html or the first available file
+        const fileToShow = files['index.html'] ? 'index.html' : Object.keys(files)[0];
+        if (fileToShow) {
+            state.activeFile = fileToShow;
+            Editor.displayFile(fileToShow);
+        }
+
+        // Update Preview
+        if (files['index.html']) {
+            UI.updatePreview(files['index.html']);
+        } else if (Object.keys(files).length > 0) {
+             // If we updated other files but not index.html, refresh the iframe to reflect changes (if server running)
+             if (state.serverUrl && UI.els.previewFrame) {
+                 UI.els.previewFrame.src = UI.els.previewFrame.src;
+             }
         }
 
         // Update AI message
-        contentEl.innerHTML = `<p>I've built that for you. Check the preview!</p><div class="code-block">${UI.escapeHtml(componentCode)}</div>`;
+        contentEl.innerHTML = `I've built that for you. Check the preview!`;
         
         // Play sound
         UI.playSuccessSound();
@@ -202,4 +197,38 @@ async function handleInput(text) {
     // Finish
     UI.updateStatus(false);
     state.isGenerating = false;
+}
+
+function parseResponse(response) {
+    const files = {};
+    const fileRegex = /<file name="([^"]+)">([\s\S]*?)<\/file>/g;
+    let match;
+    while ((match = fileRegex.exec(response)) !== null) {
+        files[match[1]] = match[2].trim();
+    }
+    return files;
+}
+
+function wrapInTemplate(content) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated App</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { font-family: sans-serif; background-color: #ffffff; }
+    </style>
+</head>
+<body class="bg-white">
+    ${content}
+    <script>
+        window.onload = () => {
+            if (window.lucide) lucide.createIcons();
+        };
+    </script>
+</body>
+</html>`;
 }
