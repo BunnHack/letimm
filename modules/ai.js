@@ -1,16 +1,14 @@
-const API_KEY = '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';
+const API_KEY = 'gLA0qkMa_ymBHnSTcZDIokN0j8KAS5RaVEbU9xtUiT0';
 
 export async function generateWithAI(prompt, onChunk) {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.poe.com/v1/chat/completions", {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${API_KEY}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": window.location.href,
-            "X-Title": "Lovable Clone"
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "model": "x-ai/grok-4.1-fast",
+            "model": "gpt-5-mini",
             "stream": true,
             "messages": [
                 {
